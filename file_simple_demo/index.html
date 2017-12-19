@@ -1,0 +1,80 @@
+<html ng-app="app">
+<head>
+	<meta charset="utf8">
+	<title>最简单的文件上传</title>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/angular.js"></script>
+</head>
+<body ng-controller="myCtr">
+	<form id="test" >
+ 		<input type="file" name="file">
+        <input type="text" name="contact">
+	</form>
+    <button onclick="send(event)">fasong</button>
+    <button ng-click="send()">angular 的 方法</button>
+    <br>
+    上传进度：<span id="percent"></span>   
+	<script>
+        //原生
+        var send=function(e){
+        	var form = new FormData(document.getElementById("test"));
+        	form.append("www","https://www.cnblogs.com/zhuxiaojie/p/4783939.html");
+        	//form.append("password",123456);
+        	var req = new XMLHttpRequest();
+        	req.open("post", "http://127.0.0.1:8081/php/post.php", false);
+        	req.send(form);
+        }
+        //jQuery
+        var send = function(){
+            var formData = new FormData(document.getElementById("test"));
+            formData.append("www","https://www.cnblogs.com/zhuxiaojie/p/4783939.html");
+            console.log(formData);
+            $.ajax({
+                    url: "http://127.0.0.1:8081/php/post.php",
+                    type: "POST",
+                    data: formData,
+                    processData: false,  // 不处理数据
+                    contentType: false,   // 不设置内容类型
+                    success: function(data) {
+                        console.log(data);
+                        alert("上传成功")
+                    }
+                });
+        }
+        //angularjs 1.5.5+
+        angular.module("app",[]).controller("myCtr",["$scope","$http","$interval",function($scope,$http,$interval){
+            $scope.send = function(){
+                var formData = new FormData(document.getElementById("test"));
+                formData.append("www","https://www.cnblogs.com/zhuxiaojie/p/4783939.html");
+                $http({
+                    method:'post',
+                    url: "http://127.0.0.1:8081/php/post.php",
+                    data:formData,
+                    eventHandlers: {
+                        progress: function(c) {
+                            
+                        }
+                    },
+                    uploadEventHandlers: { //文件上传
+                        progress: function(e) {
+                            $('#percent').html(parseInt(e.loaded/e.total *100) + '%')
+                        }
+                    },
+                    headers : {
+                        'Content-Type' : undefined  //angularjs设置文件上传的content-type修改方式
+                    },
+                    transformRequest : angular.identity
+                }).then(function (res) {
+                    console.log(res.data);
+                        alert("上传成功")
+                },function(){
+                    
+                }, function (evt) {
+                    var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+                    console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+                })
+            }
+        }])
+	</script>
+</body>
+</html>
